@@ -36,6 +36,11 @@ public class App {
 
             if (path.equals("/")) {
                 outputStream.write("HTTP/1.1 200 OK\r\n\r\n".getBytes(StandardCharsets.UTF_8));
+            } else if (path.startsWith("/echo/")) {
+                String body = path.substring("/echo/".length());
+                String response = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/plain\r\n" +
+                        "Content-Length: " + body.getBytes(StandardCharsets.UTF_8).length + "\r\n" + "\r\n" + body;
+                outputStream.write(response.getBytes(StandardCharsets.UTF_8));
             } else {
                 outputStream.write("HTTP/1.1 404 Not Found\r\n\r\n".getBytes(StandardCharsets.UTF_8));
             }
