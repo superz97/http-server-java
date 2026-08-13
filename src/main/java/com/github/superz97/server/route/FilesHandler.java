@@ -18,7 +18,13 @@ public class FilesHandler implements RouteHandler {
 
     @Override
     public HttpResponse handle(HttpRequest request, String param) {
-        Path filePath = Path.of(directory, param);
+        Path filePath;
+
+        try {
+            filePath = SafeFileResolver.resolve(directory, param);
+        } catch (IllegalArgumentException e) {
+            return HttpResponse.builder().status(HttpStatus.NOT_FOUND).build();
+        }
 
         if (!Files.isRegularFile(filePath)) {
             return HttpResponse.builder().status(HttpStatus.NOT_FOUND).build();
