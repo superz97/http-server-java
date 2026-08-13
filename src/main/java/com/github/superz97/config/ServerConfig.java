@@ -2,17 +2,23 @@ package com.github.superz97.config;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public record ServerConfig(int port, String directory) {
+public record ServerConfig(int port, String directory, long maxFileSizeBytes, Set<String> allowedExtensions) {
 
     private static final int DEFAULT_PORT = 4221;
+    private static final long DEFAULT_MAX_FILE_SIZE = 10L * 1024 * 1024;
 
     public static ServerConfig load() {
         Properties properties = loadProperties();
         int port = parsePort(properties);
         String directory = properties.getProperty("files.directory");
-        return new ServerConfig(port, directory);
+        long maxFileSizeBytes = parseMaxFileSize(properties);
+        Set<String> allowedExtensions = parseAllowedExtensions(properties);
+        return new ServerConfig(port, directory, maxFileSizeBytes, allowedExtensions);
     }
 
     private static Properties loadProperties() {
@@ -33,6 +39,25 @@ public record ServerConfig(int port, String directory) {
             return DEFAULT_PORT;
         }
         return Integer.parseInt(portValue);
+    }
+
+    private static long parseMaxFileSize(Properties properties) {
+        String value = properties.getProperty("files.max-size-bytes");
+        if (value == null) {
+            return DEFAULT_MAX_FILE_SIZE;
+        }
+        return Long.parseLong(value);
+    }
+
+    private static Set<String> parseAllowedExtensions(Properties properties) {
+        String value = properties.getProperty("files.allowed-extensions");
+        if (value == null) {
+            return Set.of();
+        }
+        return Arrays.stream(value.split(","))
+                .map(String::trim)
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
     }
 
 }

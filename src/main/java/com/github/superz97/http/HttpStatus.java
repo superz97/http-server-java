@@ -3,7 +3,11 @@ package com.github.superz97.http;
 public enum HttpStatus {
 
     OK(200, "OK"),
+    CREATED(201, "Created"),
+    BAD_REQUEST(400, "Bad Request"),
     NOT_FOUND(404, "Not Found"),
+    PAYLOAD_TOO_LARGE(413, "Payload Too Large"),
+    UNSUPPORTED_MEDIA_TYPE(415, "Unsupported Media Type"),
     INTERNAL_SERVER_ERROR(500, "Internal Server Error");
 
     private final int code;

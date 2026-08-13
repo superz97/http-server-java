@@ -1,6 +1,7 @@
 package com.github.superz97.server;
 
 import com.github.superz97.config.ServerConfig;
+import com.github.superz97.http.HttpMethod;
 import com.github.superz97.server.route.*;
 
 import java.io.IOException;
@@ -12,20 +13,23 @@ import java.util.concurrent.Executors;
 public class Server {
 
     private final int port;
+    private final long maxBodySize;
     private final Router router;
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     public Server(ServerConfig config) {
         this.port = config.port();
-        this.router = buildRouter(config.directory());
+        this.maxBodySize = config.maxFileSizeBytes();
+        this.router = buildRouter(config);
     }
 
-    private Router buildRouter(String directory) {
+    private Router buildRouter(ServerConfig config) {
         Router router = new Router();
-        router.register("/", new RootHandler());
-        router.registerPrefix("/echo/", new EchoHandler());
-        router.register("/user-agent", new UserAgentHandler());
-        router.registerPrefix("/files/", new FilesHandler(directory));
+        router.register(HttpMethod.GET, "/", new RootHandler());
+        router.registerPrefix(HttpMethod.GET, "/echo/", new EchoHandler());
+        router.register(HttpMethod.GET, "/user-agent", new UserAgentHandler());
+        router.registerPrefix(HttpMethod.GET, "/files/", new FilesHandler(config.directory()));
+        router.registerPrefix(HttpMethod.POST, "/files/", new FileUploadHandler(config.directory(), config.allowedExtensions()));
         return router;
     }
 
@@ -34,7 +38,7 @@ public class Server {
             serverSocket.setReuseAddress(true);
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                executor.submit(new RequestHandler(clientSocket, router));
+                executor.submit(new RequestHandler(clientSocket, router, maxBodySize));
             }
         }
     }
