@@ -11,10 +11,12 @@ import java.util.concurrent.Executors;
 public class Server {
 
     private final int port;
+    private final String directory;
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     public Server(ServerConfig config) {
         this.port = config.port();
+        this.directory = config.directory();
     }
 
     public void start() throws IOException {
@@ -22,7 +24,7 @@ public class Server {
             serverSocket.setReuseAddress(true);
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                executor.submit(new RequestHandler(clientSocket));
+                executor.submit(new RequestHandler(clientSocket, directory));
             }
         }
     }

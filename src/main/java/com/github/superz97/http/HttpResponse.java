@@ -58,6 +58,11 @@ public class HttpResponse {
             return this;
         }
 
+        public Builder body(byte[] body) {
+            this.body = body;
+            return this;
+        }
+
         public HttpResponse build() {
             return new HttpResponse(this);
         }
